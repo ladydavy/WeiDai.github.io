@@ -39,6 +39,9 @@ with open('courseInformation.txt','a', encoding = 'utf-8') as fp:
         name = driver.find_element_by_class_name('course-title.f-ib.f-vam').text
 #         print('课程名称:', name, file = fp)
 #         print(name)
+        #课程图片链接
+        imgUrl = driver.find_element_by_id('j-courseImg').find_element_by_class_name('img').get_attribute('src')
+#         print(imgUrl)
         #所属类别
         try:
             category = driver.find_element_by_class_name('breadcrumb_item.sub-category').text
@@ -92,20 +95,29 @@ with open('courseInformation.txt','a', encoding = 'utf-8') as fp:
 #         print(term_info)
         #课程所属学校名称
         university = driver.find_element_by_class_name('u-img').get_attribute('alt')
+        #开设院校图片
+        uImgUrl = driver.find_element_by_class_name('u-img').get_attribute('src')
+#         print(uImgUrl)
 #         print('开设高校:', university, file = fp)
 #         print(university)
         #授课教师信息：姓名 职称 多页
         teachers_list = []
         while True:
-            teachers = driver.find_elements_by_class_name('cnt.f-fl')
+#             teachers = driver.find_elements_by_class_name('cnt.f-fl')
+            teachers = driver.find_elements_by_class_name('ga-click.u-tchcard.f-cb')
             for tea in teachers:
-                teacher_info = tea.text
-                teachers_list.append(teacher_info.split())
+                teacher_info = tea.find_element_by_class_name('cnt.f-fl').text
+                print(teacher_info)
+                #教师头像链接
+                teacher_imgUrl = tea.find_element_by_class_name('f-fl').get_attribute('src')
+                print(teacher_imgUrl)
+                teachers_list.append([teacher_info.split(), teacher_imgUrl])
             try:
                 slider_next = driver.find_element_by_class_name('u-icon-arrow-right-thin.f-ib.f-pa')
                 driver.execute_script("arguments[0].click();", slider_next)
             except NoSuchElementException:
                 break
+        
 #         print('教师:', teachers_list, file = fp)
 #         print(teachers_list)
         #简介-课程团队
@@ -148,7 +160,12 @@ with open('courseInformation.txt','a', encoding = 'utf-8') as fp:
                 staleElement = True
                 while staleElement:
                     try:
+                        #学员用户名
                         user_name = comment.find_element_by_class_name('primary-link.ux-mooc-comment-course-comment_comment-list_item_body_user-info_name').text
+                        #学员头像链接
+                        user_imgUrl = comment.find_element_by_class_name('ux-mooc-comment-course-comment_comment-list_item_avatar').find_element_by_tag_name('img').get_attribute('src')
+#                         print(user_imgUrl)
+                        
                         #学员评分
                         star = len(comment.find_element_by_class_name('star-point').find_elements_by_tag_name('i'))
                         #学员评语 更多
@@ -168,7 +185,7 @@ with open('courseInformation.txt','a', encoding = 'utf-8') as fp:
                         staleElement = False
                     except StaleElementReferenceException:
                         staleElement = True
-                course_comments.append({'user_name':user_name,'star':star,'content':comment_text,'date':comment_date,'term':term_signed,'vote':comment_vote})
+                course_comments.append({'user_name':user_name, 'user_img':user_imgUrl, 'star':star,'content':comment_text,'date':comment_date,'term':term_signed,'vote':comment_vote})
             #翻页
             try:
                 page = driver.find_element_by_class_name('ux-pager_btn.ux-pager_btn__next')
@@ -186,7 +203,9 @@ with open('courseInformation.txt','a', encoding = 'utf-8') as fp:
     #     course = {'course name':name, 'university': university, 'category':category, 'teachers': teachers_list, 'term number':term_number, 'term_info':term_info, 'course introduction':course_intro, 'course overview':course_overview_text, 'review number': review_num, 'overall score':review_score, 'comments':course_comments, 'url':cUrl} 
 #         course = [name, university, category, teachers_list, term_number, term_info, course_intro, course_overview_text, review_num, review_score, course_comments, cUrl] 
         print('课程名称:', name, file = fp)
+        print('课程图片:', imgUrl, file = fp)
         print('开设高校:', university, file = fp)
+        print('开设院校图片:', uImgUrl, file = fp)
         print('所属类别:', category, file = fp)
         print('教师:', teachers_list, file = fp)
         print('开课次数:', term_number, file = fp)
